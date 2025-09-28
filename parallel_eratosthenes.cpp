@@ -14,6 +14,14 @@ void simple_erastosthenes(uint64_t n, int num_threads) {
     // find primes from sqrt(n) to n using multiple threads
 }
 
+void simple_multithreaded_eratosthenese(){
+
+
+
+
+    return;
+}
+
 int main(int _argc, char* _argv[]) {
     if (_argc < 2) {
         cerr << "Usage: " << _argv[0] << " <n> [num_threads]" << endl;
