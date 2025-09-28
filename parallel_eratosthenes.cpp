@@ -7,7 +7,16 @@
 
 using namespace std;
 
-void simple_erastosthenes(uint64_t n, int num_threads) {
+class word{
+    public:
+        uint64_t* wordArray;
+        uint64_t numWords;
+        uint64_t n;
+    
+              
+};
+
+void simple_erastosthenes(uint64_t start, uint64_t end); {
     // declare array/bits
     
     // find primes until sqrt(n) using single thread
@@ -15,7 +24,7 @@ void simple_erastosthenes(uint64_t n, int num_threads) {
 }
 
 void simple_multithreaded_eratosthenese(){
-
+    
 
 
 
@@ -33,6 +42,22 @@ int main(int _argc, char* _argv[]) {
     cout << "Finding primes up to " << n << " using " << num_threads << " threads." << endl;
 
     simple_erastosthenes(n, num_threads);
+
+
+    /*
+     * Use the following area for parallel and bitwise   
+     */
+
+    word primes;
+    
+    primes.n = n;
+    primes.numWords = (n / 64) + 1;
+    primes.wordArray = new uint64_t(primes.numWords);
+
+    
+    
+
+
 
     return 0;
 }
