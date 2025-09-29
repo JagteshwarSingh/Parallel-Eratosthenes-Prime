@@ -58,6 +58,8 @@ class word{
             return count;
         }
 
+        
+
         uint64_t count_primes(uint64_t start, uint64_t end, uint64_t count){
 
             for (uint64_t i = (start + 1) | 1; i <= end; i += 2)
@@ -80,6 +82,23 @@ class word{
             return count;
         }
 
+        void thread_start(uint64_t* count, uint64_t start, uint64_t end){
+
+            int x;
+            for (int i = 0; i < 1000; i++){
+                x = ((i / 3) + 1) * 3;
+                if (x < i){
+                    printf("false assumption\n");
+                    return;
+                }
+            }
+            printf("correct assumption\n");
+            //printf("x: %d\n", x);
+            //int y =  
+
+            return;
+        }
+
         uint64_t multithreaded_eratosthenes(uint64_t numThreads){
 
             uint64_t count;
@@ -87,17 +106,27 @@ class word{
             count = serial_eratosthenes(serialEnd);
 
             std::thread* threads = new std::thread[numThreads];
+            uint64_t* threadCounts = new uint64_t[numThreads]();
+
+            uint64_t threadsRange = n - serialEnd;
+            uint64_t currThreadStart = serialEnd;
+            uint64_t currThreadEnd;
 
             for (int t = 0; t < numThreads; t++){
-                threads[t] = std::thread();
+                currThreadEnd = currThreadStart + threadsRange;
+                threads[t] = std::thread(&word::thread_start, this, &threadCounts[t], currThreadStart + 1, currThreadEnd);
+                currThreadStart += threadsRange;
 
             }
 
             for (int t = 0; t < numThreads; t++){
                 threads[t].join();
+                count += threadCounts[t];
             }
 
-            delete threads;
+            //delete threads;
+            //delete threadCounts;
+
             return count;
         }
 
@@ -127,10 +156,10 @@ int main(int _argc, char* _argv[]) {
     primes.n = n;
     primes.numWords = (n / 64) + 1;
 
-    primes.wordArray = new uint64_t[primes.numWords];
-    for (uint64_t i = 0; i < primes.numWords; i++){
-        primes.wordArray[i] = 0;
-    }
+    primes.wordArray = new uint64_t[primes.numWords]();
+    // for (uint64_t i = 0; i < primes.numWords; i++){
+    //     primes.wordArray[i] = 0;
+    // }
 
     uint64_t count;
 
