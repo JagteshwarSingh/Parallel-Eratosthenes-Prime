@@ -13,15 +13,62 @@ class word{
         uint64_t numWords;
         uint64_t n;
     
+        bool is_prime(uint64_t i){
+
+            const uint64_t wordArrayIndex = i / 128;
+            const uint8_t  wordBitPosition = (i % 128) >> 1;
+
+            const uint64_t mask = 1LL << wordBitPosition;
+
+            const bool isPrime = (wordArray[wordArrayIndex] & mask) == 0;
+
+
+            return isPrime;
+        }
+
+        void setnclear_word(uint64_t i){
+
+            const uint64_t wordArrayIndex = i / 128;
+            const uint8_t wordBitPosition = (i % 128) >> 1;
+            const uint64_t mask = 1LL << wordBitPosition;
+            
+            wordArray[wordArrayIndex] |= mask;
+
+            return;
+        }   
+
+        uint64_t bitwise_eratosthenes(uint64_t size) {
+		
+            uint64_t count = 1; // 2 is a special case
+                
+            uint64_t lim = sqrt(size);
+            for (uint64_t i = 3; i <= lim; i += 2){
+                if (is_prime(i)) {
+                    count++;
+                    printf("i: %ld, count: %ld\n", i, count);
+                    
+                    for (uint64_t j = i * i; j <= size; j += 2 * i)
+                        setnclear_word(j);
+                }
+            }
+            
+            for (uint64_t i = (lim + 1) | 1; i <= size; i += 2)
+                if (is_prime(i)){
+                    count++;
+                    printf("i: %ld, count: %ld\n", i, count);
+                }
+            return count;
+        }
               
 };
 
-void simple_erastosthenes(uint64_t start, uint64_t end); {
-    // declare array/bits
+
+
+void simple_erastosthenes(uint64_t start, uint64_t end) {
     
-    // find primes until sqrt(n) using single thread
-    // find primes from sqrt(n) to n using multiple threads
 }
+
+//uint64_t bitwise_eratosthenes();
 
 void simple_multithreaded_eratosthenese(){
     
@@ -54,10 +101,17 @@ int main(int _argc, char* _argv[]) {
     primes.numWords = (n / 64) + 1;
     primes.wordArray = new uint64_t(primes.numWords);
 
-    
-    
+    uint64_t be_count = primes.bitwise_eratosthenes(n);
+   
+    printf("becount: %ld\n", be_count);
 
 
 
     return 0;
 }
+
+
+
+
+
+
