@@ -27,7 +27,7 @@ class word{
             return isPrime;
         }
 
-        void setnclear_word(uint64_t i){
+        void set_word(uint64_t i){
 
             const uint64_t wordArrayIndex = i / 128;
             const uint64_t wordBitPosition = (i % 128) >> 1;
@@ -38,7 +38,7 @@ class word{
             return;
         }   
 
-        uint64_t bitwise_eratosthenes(uint64_t size, uint64_t lim) {
+        uint64_t bitwise_eratosthenes(uint64_t lim, uint64_t size) {
 		
             uint64_t count = 1; // 2 is a special case
                 
@@ -49,7 +49,7 @@ class word{
                     //printf("count: %ld\n", count);
                     
                     for (uint64_t j = i * i; j <= size; j += 2 * i){
-                        setnclear_word(j);
+                        set_word(j);
                         //printf("j: %ld\n", j);
                     }
                 }
@@ -60,7 +60,7 @@ class word{
 
         uint64_t count_primes(uint64_t start, uint64_t end, uint64_t count){
 
-            for (uint64_t i = (end + 1) | 1; i <= start; i += 2)
+            for (uint64_t i = (start + 1) | 1; i <= end; i += 2)
                 if (is_prime(i)){
                     count++;
                     //printf("i: %ld, count: %ld\n", i, count);
@@ -69,14 +69,35 @@ class word{
             return count;
         }
 
-        uint64_t serial_eratosthenes(uint64_t n){
+        uint64_t serial_eratosthenes(uint size){
 
             uint64_t count;
-            uint64_t lim = sqrt(n);
-            count = bitwise_eratosthenes(n, lim);
-            count = count_primes(lim, n, count);
+            uint64_t lim = sqrt(size);
+            count = bitwise_eratosthenes(lim, size);
+            count = count_primes(lim, size, count);
 
 
+            return count;
+        }
+
+        uint64_t multithreaded_eratosthenes(uint64_t numThreads){
+
+            uint64_t count;
+            uint64_t serialEnd = sqrt(n);
+            count = serial_eratosthenes(serialEnd);
+
+            std::thread* threads = new std::thread[numThreads];
+
+            for (int t = 0; t < numThreads; t++){
+                threads[t] = std::thread();
+
+            }
+
+            for (int t = 0; t < numThreads; t++){
+                threads[t].join();
+            }
+
+            delete threads;
             return count;
         }
 
@@ -86,29 +107,16 @@ class word{
 
 
 
-void simple_erastosthenes(uint64_t start, uint64_t end) {
-    
-}
-
-//uint64_t bitwise_eratosthenes();
-
-void simple_multithreaded_eratosthenese(){
-    
-
-
-
-    return;
-}
 
 int main(int _argc, char* _argv[]) {
     if (_argc < 2) {
-        cerr << "Usage: " << _argv[0] << " <n> [num_threads]" << endl;
+        cerr << "Usage: " << _argv[0] << " <n> [numThreads]" << endl;
         return 1;
     }
     uint64_t n = atol(_argv[1]);
-    int num_threads = _argc > 2 ? atoi(_argv[2]) : thread::hardware_concurrency();
+    int numThreads = _argc > 2 ? atoi(_argv[2]) : thread::hardware_concurrency();
 
-    cout << "Finding primes up to " << n << " using " << num_threads << " threads." << endl;
+    cout << "Finding primes up to " << n << " using " << numThreads << " threads." << endl;
 
     //simple_erastosthenes(n, num_threads);
 
@@ -124,10 +132,22 @@ int main(int _argc, char* _argv[]) {
         primes.wordArray[i] = 0;
     }
 
+    uint64_t count;
+
+    if (numThreads == 0){
+        printf("number of threads mus be at least 1\n");
+    }
+    else if (numThreads == 1){
+        count = primes.serial_eratosthenes(n);
+    }
+    else {
+        count = primes.multithreaded_eratosthenes(numThreads);
+    }
+
+    delete(primes.wordArray);
     
-    uint64_t be_count = primes.serial_eratosthenes(n);
    
-    printf("becount: %ld\n", be_count);
+    printf("count: %ld\n", count);
 
 
 
