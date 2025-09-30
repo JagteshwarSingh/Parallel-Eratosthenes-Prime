@@ -28,6 +28,20 @@ class word{
             return isPrime;
         }
 
+        bool is_prime_counting(uint64_t curr_num, const uint64_t* wordArraycopy){
+
+            const uint64_t wordArrayIndex = curr_num / 128;
+            const uint64_t  wordBitPosition = (curr_num % 128) >> 1;
+            const uint64_t mask = 1LL << wordBitPosition;
+
+            const bool isPrime = (wordArraycopy[wordArrayIndex] & mask) == 0;
+
+            //std::cout << "currnum: " << curr_num << ", index: " << wordArrayIndex << ", mask: " << mask << ", isPrime: " << isPrime << std::endl;
+            
+
+            return isPrime;
+        }
+
         void set_word(uint64_t i){
 
             const uint64_t wordArrayIndex = i / 128;
@@ -65,7 +79,7 @@ class word{
             printf("Thread: start %lu, end %lu\n", start, end);
             uint64_t local_count = 0;
             for (uint64_t i = (start + 1) | 1; i <= end; i += 2)
-                if (is_prime(i)){
+                if (is_prime_counting(i, wordArray)){
                     printf("i: %ld\n", i);
                     local_count++;
                     //printf("i: %ld, count: %ld\n", i, count);
@@ -132,7 +146,7 @@ class word{
 
             uint64_t count;
             uint64_t lim = sqrt(n);
-            count = serial_eratosthenes(lim);
+            count = bitwise_eratosthenes(lim, n);
             printf("count after serial: %ld\n", count);
             count = count_primes_multithreaded(lim, n, count, numThreads);
             printf("count after multithreaded: %ld\n", count);
