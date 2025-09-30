@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 using namespace std;
 
@@ -60,13 +61,41 @@ class word{
 
         
 
-        uint64_t count_primes(uint64_t start, uint64_t end, uint64_t count){
-
+        void count_primes(uint64_t start, uint64_t end, uint64_t* count){
+            printf("Thread: start %lu, end %lu\n", start, end);
+            uint64_t local_count = 0;
             for (uint64_t i = (start + 1) | 1; i <= end; i += 2)
                 if (is_prime(i)){
-                    count++;
+                    printf("i: %ld\n", i);
+                    local_count++;
                     //printf("i: %ld, count: %ld\n", i, count);
                 }
+            *count += local_count;
+
+        }
+
+        uint64_t count_primes_multithreaded(uint64_t start, uint64_t end, uint64_t count, int numThreads){
+
+            std::vector<std::thread> threads;
+            std::vector<uint64_t> threadCounts(numThreads, 0);
+
+            uint64_t chunk = (end - start + 1) / numThreads;
+            
+            for (int i = 0; i < numThreads; ++i) {
+                uint64_t start_t = start + i * chunk;
+                uint64_t end_t = (i == numThreads - 1) ? end : start + (i + 1) * chunk - 1;
+                
+                threads.emplace_back(&word::count_primes, this, start_t, end_t, &threadCounts[i]);
+            }
+            
+            for (auto& t : threads) {
+                t.join();
+            }
+            
+            for (const auto& c : threadCounts) {
+                printf("Thread count: %lu\n", c);  // Use %lu for uint64_t
+                count += c;
+            }
 
             return count;
         }
@@ -76,53 +105,55 @@ class word{
             uint64_t count;
             uint64_t lim = sqrt(size);
             count = bitwise_eratosthenes(lim, size);
-            count = count_primes(lim, size, count);
+            count_primes(lim, size, &count);
 
 
             return count;
         }
 
-        void thread_start(uint64_t* count, uint64_t start, uint64_t end){
+        // void thread_start(uint64_t* count, uint64_t start, uint64_t end){
 
-            int x;
-            for (int i = 0; i < 1000; i++){
-                x = ((i / 3) + 1) * 3;
-                if (x < i){
-                    printf("false assumption\n");
-                    return;
-                }
-            }
-            printf("correct assumption\n");
-            //printf("x: %d\n", x);
-            //int y =  
+        //     int x;
+        //     for (int i = 0; i < 1000; i++){
+        //         x = ((i / 3) + 1) * 3;
+        //         if (x < i){
+        //             printf("false assumption\n");
+        //             return;
+        //         }
+        //     }
+        //     printf("correct assumption\n");
+        //     //printf("x: %d\n", x);
+        //     //int y =  
 
-            return;
-        }
+        //     return;
+        // }
 
-        uint64_t multithreaded_eratosthenes(uint64_t numThreads){
+        uint64_t multithreaded_eratosthenes(int numThreads){
 
             uint64_t count;
-            uint64_t serialEnd = sqrt(n);
-            count = serial_eratosthenes(serialEnd);
+            uint64_t lim = sqrt(n);
+            count = serial_eratosthenes(lim);
+            printf("count after serial: %ld\n", count);
+            count = count_primes_multithreaded(lim, n, count, numThreads);
+            printf("count after multithreaded: %ld\n", count);
+            // std::thread* threads = new std::thread[numThreads];
+            // uint64_t* threadCounts = new uint64_t[numThreads]();
 
-            std::thread* threads = new std::thread[numThreads];
-            uint64_t* threadCounts = new uint64_t[numThreads]();
+            // uint64_t threadsRange = n - serialEnd;
+            // uint64_t currThreadStart = serialEnd;
+            // uint64_t currThreadEnd;
 
-            uint64_t threadsRange = n - serialEnd;
-            uint64_t currThreadStart = serialEnd;
-            uint64_t currThreadEnd;
+            // for (int t = 0; t < numThreads; t++){
+            //     currThreadEnd = currThreadStart + threadsRange;
+            //     threads[t] = std::thread(&word::thread_start, this, &threadCounts[t], currThreadStart + 1, currThreadEnd);
+            //     currThreadStart += threadsRange;
 
-            for (int t = 0; t < numThreads; t++){
-                currThreadEnd = currThreadStart + threadsRange;
-                threads[t] = std::thread(&word::thread_start, this, &threadCounts[t], currThreadStart + 1, currThreadEnd);
-                currThreadStart += threadsRange;
+            // }
 
-            }
-
-            for (int t = 0; t < numThreads; t++){
-                threads[t].join();
-                count += threadCounts[t];
-            }
+            // for (int t = 0; t < numThreads; t++){
+            //     threads[t].join();
+            //     count += threadCounts[t];
+            // }
 
             //delete threads;
             //delete threadCounts;
