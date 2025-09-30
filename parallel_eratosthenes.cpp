@@ -78,7 +78,7 @@ class word{
         void count_primes(uint64_t start, uint64_t end, uint64_t* count){
             printf("Thread: start %lu, end %lu\n", start, end);
             uint64_t local_count = 0;
-            for (uint64_t i = (start + 1) | 1; i <= end; i += 2)
+            for (uint64_t i = start | 1; i <= end; i += 2)
                 if (is_prime_counting(i, wordArray)){
                     printf("i: %ld\n", i);
                     local_count++;
@@ -90,8 +90,8 @@ class word{
 
         uint64_t count_primes_multithreaded(uint64_t start, uint64_t end, uint64_t count, int numThreads){
 
-            std::vector<std::thread> threads;
-            std::vector<uint64_t> threadCounts(numThreads, 0);
+            std::thread* threads = new std::thread[numThreads]();
+            uint64_t* threadCounts = new uint64_t[numThreads]();
 
             uint64_t chunk = (end - start + 1) / numThreads;
             
@@ -99,18 +99,18 @@ class word{
                 uint64_t start_t = start + i * chunk;
                 uint64_t end_t = (i == numThreads - 1) ? end : start + (i + 1) * chunk - 1;
                 
-                threads.emplace_back(&word::count_primes, this, start_t, end_t, &threadCounts[i]);
+                threads[i] = std::thread(&word::count_primes, this, start_t, end_t, &threadCounts[i]);
             }
             
-            for (auto& t : threads) {
-                t.join();
-            }
-            
-            for (const auto& c : threadCounts) {
-                printf("Thread count: %lu\n", c);  // Use %lu for uint64_t
-                count += c;
+            for (int i = 0; i < numThreads; i++) {
+                threads[i].join();
+                printf("Thread count: %lu\n", threadCounts[i]);
+                count += threadCounts[i];
             }
 
+            delete[] threads;
+            delete[] threadCounts;
+            
             return count;
         }
 
@@ -119,7 +119,7 @@ class word{
             uint64_t count;
             uint64_t lim = sqrt(size);
             count = bitwise_eratosthenes(lim, size);
-            count_primes(lim, size, &count);
+            count_primes(lim + 1, size, &count);
 
 
             return count;
@@ -148,7 +148,7 @@ class word{
             uint64_t lim = sqrt(n);
             count = bitwise_eratosthenes(lim, n);
             printf("count after serial: %ld\n", count);
-            count = count_primes_multithreaded(lim, n, count, numThreads);
+            count = count_primes_multithreaded(lim + 1, n, count, numThreads);
             printf("count after multithreaded: %ld\n", count);
             // std::thread* threads = new std::thread[numThreads];
             // uint64_t* threadCounts = new uint64_t[numThreads]();
